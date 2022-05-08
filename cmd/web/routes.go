@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// routes defines the application routes
 func routes() http.Handler {
 	mux := pat.New()
 

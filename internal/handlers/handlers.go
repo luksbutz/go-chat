@@ -7,11 +7,13 @@ import (
 	"net/http"
 )
 
+// views is the jet view set
 var views = jet.NewSet(
 	jet.NewOSFileSystemLoader("./html"),
 	jet.InDevelopmentMode(),
 )
 
+// upgradeConnection is the websocket upgrade from gorilla/websockets
 var upgradeConnection = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
@@ -28,11 +30,25 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// WsConnection is a wrapper for our websocket connection, in case
+// we ever need to put more data into the struct
+type WsConnection struct {
+	*websocket.Conn
+}
+
 // WsJSONResponse defines the response sent back from websocket
 type WsJSONResponse struct {
 	Action      string `json:"action"`
 	Message     string `json:"message"`
 	MessageType string `json:"message_type"`
+}
+
+// WsJSONPayload defines the websocket request from the client
+type WsJSONPayload struct {
+	Action   string       `json:"action"`
+	Username string       `json:"username"`
+	Message  string       `json:"message"`
+	Conn     WsConnection `json:"-"`
 }
 
 // WsEndpoint upgrade connection to websocket
