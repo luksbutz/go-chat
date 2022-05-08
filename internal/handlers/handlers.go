@@ -28,6 +28,33 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// WsJSONResponse defines the response sent back from websocket
+type WsJSONResponse struct {
+	Action      string `json:"action"`
+	Message     string `json:"message"`
+	MessageType string `json:"message_type"`
+}
+
+// WsEndpoint upgrade connection to websocket
+func WsEndpoint(w http.ResponseWriter, r *http.Request) {
+	ws, err := upgradeConnection.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	log.Println("Client connected to endpoint", r.RemoteAddr)
+
+	response := WsJSONResponse{
+		Message: `<em><small>Connected to server</small></em>`,
+	}
+
+	err = ws.WriteJSON(response)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
 // renderPage renders a jet template
 func renderPage(w http.ResponseWriter, tmpl string, data jet.VarMap) error {
 	view, err := views.GetTemplate(tmpl)
