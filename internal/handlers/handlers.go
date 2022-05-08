@@ -116,6 +116,11 @@ func ListenToWsChan() {
 			response.Action = "list_users"
 			response.ConnectedUsers = getUserList()
 			broadcastToAll(response)
+		case "left":
+			response.Action = "list_users"
+			delete(clients, e.Conn)
+			response.ConnectedUsers = getUserList()
+			broadcastToAll(response)
 		}
 
 		//response.Action = "Got here"
