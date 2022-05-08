@@ -40,11 +40,14 @@
                 <input type="text" name="message" id="message" class="form-control" autocomplete="off">
             </div>
 
+            <hr>
+            <a href="javascript:void(0);" class="btn btn-outline-secondary" id="sendBtn">Send Message</a>
+
             <input type="hidden" name="action" id="action">
 
             <hr>
 
-            <div id="output" class="chatbox">
+            <div id="chatbox" class="chatbox">
 
             </div>
         </div>
@@ -62,6 +65,9 @@
         integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
 <script>
     let socket = null;
+    let chatbox = document.getElementById("chatbox");
+    let userField = document.getElementById("username");
+    let messageField = document.getElementById("message");
 
     window.onbeforeunload = () => {
         console.log("Leaving");
@@ -105,6 +111,10 @@
                         }
                     }
                     break;
+
+                case "broadcast":
+                    chatbox.innerHTML = `${chatbox.innerHTML}${data.message}<br>`
+                    break;
             }
         };
 
@@ -117,7 +127,36 @@
 
             socket.send(JSON.stringify(jsonData));
         })
+
+        document.getElementById("message").addEventListener("keydown", event => {
+            if (event.code === "Enter") {
+                sendMessage();
+            }
+        })
+
+        document.getElementById("sendBtn").addEventListener("click", function () {
+            sendMessage();
+        })
     })
+
+    function sendMessage() {
+        if (!socket) {
+            alert("No connection");
+            return false;
+        } else if ((userField.value === "") || (messageField.value) === "") {
+            alert("fill out user and message");
+            return false;
+        } else {
+            let jsonData = {
+                action: "broadcast",
+                username: userField.value,
+                message: messageField.value,
+            };
+
+            socket.send(JSON.stringify(jsonData));
+            messageField.value = "";
+        }
+    }
 </script>
 </body>
 </html>
