@@ -71,6 +71,9 @@ func WsEndpoint(w http.ResponseWriter, r *http.Request) {
 		Message: `<em><small>Connected to server</small></em>`,
 	}
 
+	response.Action = "list_users"
+	response.ConnectedUsers = getUserList()
+
 	conn := WsConnection{Conn: ws}
 	clients[conn] = ""
 
@@ -133,7 +136,9 @@ func getUserList() []string {
 	var userList []string
 
 	for _, c := range clients {
-		userList = append(userList, c)
+		if c != "" {
+			userList = append(userList, c)
+		}
 	}
 
 	sort.Strings(userList)

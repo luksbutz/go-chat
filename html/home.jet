@@ -92,15 +92,17 @@
 
             switch (data.action) {
                 case "list_users":
-                    let ul = document.getElementById("online_users");
-                    while (ul.firstChild) ul.removeChild(ul.firstChild);
+                    if (data.connected_users) {
+                        let ul = document.getElementById("online_users");
+                        while (ul.firstChild) ul.removeChild(ul.firstChild);
 
-                    if (data.connected_users.length > 0) {
-                        data.connected_users.forEach(item => {
-                            let li = document.createElement("li");
-                            li.appendChild(document.createTextNode(item));
-                            ul.appendChild(li);
-                        })
+                        if (data.connected_users.length > 0) {
+                            data.connected_users.forEach(item => {
+                                let li = document.createElement("li");
+                                li.appendChild(document.createTextNode(item));
+                                ul.appendChild(li);
+                            })
+                        }
                     }
                     break;
             }
