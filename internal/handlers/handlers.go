@@ -1,11 +1,16 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/CloudyKit/jet/v6"
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
 )
+
+var wsChan = make(chan WsJSONPayload)
+
+var clients = make(map[WsConnection]string)
 
 // views is the jet view set
 var views = jet.NewSet(
@@ -65,9 +70,58 @@ func WsEndpoint(w http.ResponseWriter, r *http.Request) {
 		Message: `<em><small>Connected to server</small></em>`,
 	}
 
+	conn := WsConnection{Conn: ws}
+	clients[conn] = ""
+
 	err = ws.WriteJSON(response)
 	if err != nil {
 		log.Println(err)
+	}
+
+	go ListenForWs(&conn)
+}
+
+// ListenForWs is a goroutine that handles communication between server and client, and
+// feeds data into the wsChan
+func ListenForWs(conn *WsConnection) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Error %v\n", r)
+		}
+	}()
+
+	var payload WsJSONPayload
+
+	for {
+		if err := conn.ReadJSON(&payload); err == nil {
+			payload.Conn = *conn
+			wsChan <- payload
+		}
+	}
+}
+
+// ListenToWsChan is a goroutine that waits for an entry on the wsChan, and handles it according to the
+// specified action
+func ListenToWsChan() {
+	var response WsJSONResponse
+
+	for {
+		e := <-wsChan
+
+		response.Action = "Got here"
+		response.Message = fmt.Sprintf("Some message, and action was %s", e.Action)
+	}
+}
+
+// broadcastToAll sends a ws response to all connected clients
+func broadcastToAll(response WsJSONResponse) {
+	for client := range clients {
+		err := client.WriteJSON(response)
+		if err != nil {
+			log.Println("Websocket err", err)
+			_ = client.Close()
+			delete(clients, client)
+		}
 	}
 }
 

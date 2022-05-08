@@ -73,7 +73,10 @@
         };
 
         socket.onmessage = msg => {
-            console.log(msg);
+            if (msg.data !== "") {
+                let j = JSON.parse(msg.data);
+                console.log(j);
+            }
         };
     })
 </script>
